@@ -2,9 +2,7 @@
 
 * author: Nicholas Lange
 * contact: lange.nk@gmail.com
-* cran link:
-* first published: 14-January-2019
-* last update: 14-January-2019
+* cran link: tba
 
 This package fits the univariate dual-process model (Yonelinas, 1999) to recognition or source memory data by fitting the model to the ROC curve (minimizing SSE) or to the frequencies of responses by minimizing log-likelihood.
 
@@ -82,6 +80,7 @@ These are functions that are called from the wrapper function depending on argum
 
 ## To Do:
 
+* Tidy for cran 
 * Also accept already summarized cumrates or frequency data rather than only item-level data
 * Integrate a Bayesian estimation
 * Make predictedROC talk directly to output from DPSD
