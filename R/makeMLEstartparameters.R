@@ -1,6 +1,6 @@
-#' DP Recog-Source: Make start parameters
+#' Dual process MLE: Make start parameters
 #'
-#' This function estimates start parameters for the DP biavariate model/ROC fit, with starting parameters for the
+#' This function estimates start parameters for the DP univariate model fit, with starting parameters for the
 #' first 40% of iterations sampled from around the observed data, and 60% sampled from a uniform distribution.
 #'
 #' @author Nicholas Lange, \email{lange.nk@gmail.com}
@@ -9,7 +9,6 @@
 #' @param iterations the number of runs
 #' @return The function returns a dataframe:
 #' \item{(parameters)}{Starting parameters for all parameters that versions of the DP Recog-Source model could vary to date}
-#' @keywords dual process, maximum likelihood
 #' @export
 
 makeMLEstartparameters<-function(freqFA,freqHit,iterations){
@@ -94,6 +93,8 @@ makeMLEstartparameters<-function(freqFA,freqHit,iterations){
       Cs[,i]<-log(c(truncnorm::rtruncnorm(close,mean=e.TMPCs[i],sd=.02,a=0),stats::runif(random,min=0,max=1))) # Cs2 - Csi formally dCs(i), i.e. increase on top of Cs(i-1)
     }
   }
+
+  # Recollection parameters not estimated from the data!
   RTraw <- c(truncnorm::rtruncnorm(close,mean=0.2,sd=0.2,a=0, b = 1), stats::runif(random,min=0,max=1))
   RLraw <- c(truncnorm::rtruncnorm(close,mean=0.2,sd=0.2,a=0, b = 1), stats::runif(random,min=0,max=1))
 

@@ -1,14 +1,14 @@
-#' Estimation of recollection and familiarity by fitting recognition memory data to the Dual Process Signal Detection (DPSD) model
+#' Estimation of recollection and familiarity by fitting recognition memory data with the Dual Process Signal Detection (DPSD) model
 #'
 #' This function allows to estimate recollection and familiarity for recognition memory data by fitting data to the DPSD model.
-#' The optimization is attempted by minimizing the total squared difference between observed and
-#' predicted cumulative hit and false alarm rates using the Broyden-Fletcher-Goldfarb-Shanno (BFGS) algorithm in \code{\link{optim}}.
+#' The optimization is attempted by minimizing the summed log-likelihood using the Broyden-Fletcher-Goldfarb-Shanno (BFGS) algorithm
+#' in \code{\link{optim}}.
 #' The function uses random start values on each iteration in order to find the set of parameters,
 #' which fit the data best by returning the values with the lowest negative log likelihood.
 #' Recollection and Familiarity for the lure distribution (new items) are set to 0.
 #' Optional arguments in the function allow the user to specify an equal-variance model.
 #' Recollection is bounded to be between 0 and 1, Familiarity and the standard deviation of the target distribution to be positive.
-#' Criteria are unbounded.
+#' Criteria are ordered.
 #'
 #' @author Nicholas Lange, \email{lange.nk@gmail.com}
 #' @param falseAlarms A vector containing the number of false alarms per recognition category rating.
@@ -19,8 +19,6 @@
 #' \item{(parameters)}{The estimated parameters (recollection_target, recollection_lure = 0, familiarity, sd_target, criteria) for the iteration with the lowest SumSquareError}
 #' \item{SSE}{Minimum sum square error}
 #' @references Yonelinas, A. P. (1999). The Contribution of Recollection and Familiarity to Recognition and Source-Memory Judgments: A Formal Dual-Process Model and an Analysis of Receiver Operating Characteristics. Journal of Experimental Psychology: Learning, Memory, and Cognition, 25(6), 1415 - 1434. http://doi.org/10.1037//0278-7393.25.6.1415
-#' @seealso memoryROC, a R package for recognition DP ROCs by Joern Alexander Quent (\email{alexander.quent@rub.de})
-#' See \code{\link{github.com/JAQuent/memoryROC}}.
 #' @keywords ROC recollection familiarity DPSD
 #' @export
 
@@ -57,19 +55,20 @@ fitDPSD <- function(falseAlarms, hit, iterations = 200, eqVar = TRUE){
 
     I <- c(-Inf,crit,Inf)
 
+    # Lure items: never recollected
     predFA <- vector()
     for (i in 1:length(falseAlarms)) {
-      predFA[i] <- log( pnorm(I[i+1],mean=0,sd=1)-pnorm(I[i],mean=0,sd=1) )
+      predFA[i] <- log(stats::pnorm(I[i+1],mean=0,sd=1)-stats::pnorm(I[i],mean=0,sd=1) )
     }
 
     # Old items (1 -5) [not recollected]
     predHit <- vector()
     for (i in 1:(length(hit) - 1)) {
-      predHit[i] <- log( (1-rt)*(pnorm(I[i+1],mean=dpri,sd=sd_target)-pnorm(I[i],mean=dpri,sd=sd_target)) )
+      predHit[i] <- log( (1-rt)*(stats::pnorm(I[i+1],mean=dpri,sd=sd_target)-stats::pnorm(I[i],mean=dpri,sd=sd_target)) )
     }
 
     # Old items (6) [Recollected or not recollected]
-    predHit[6] <- log( rt + ((1-rt)*(1-pnorm(I[6],mean=dpri,sd=sd_target))) )
+    predHit[6] <- log( rt + ((1-rt)*(1-stats::pnorm(I[6],mean=dpri,sd=sd_target))) )
 
     hitLik <- hit[i] * predHit[i]
     faLik <- falseAlarms[i] * predFA[i]
@@ -77,30 +76,31 @@ fitDPSD <- function(falseAlarms, hit, iterations = 200, eqVar = TRUE){
     return( -sum(c(hitLik,faLik)) )
   }
 
+  # estimate starting parameters from data
+  rstart <- makeMLEstartparameters(falseAlarms,hit,iterations = iterations)
+  x0 <- NULL
   for (i in 1:iterations) {
-    x0 <- NULL
+
+    criteria <- rstart[,grepl( "Cs" , names(rstart))]
     if (eqVar == TRUE) {
-      rstart <- stats::runif(1, 0.2, 0.7)
-      x0 <- c(log(rstart / (1 - rstart)),
-              log(truncnorm::rtruncnorm(1, 0.4, 0.5, a = 0)),
-              stats::runif(length(falseAlarms), min = -5, 5))
 
+      modelpara <- rstart[,c("rt","dpri")]
+      x0 <- cbind(modelpara,criteria)
     } else if (eqVar == FALSE) {
-      rstart <- stats::runif(1, 0.2, 0.7)
-      x0 <- c(log(rstart / (1 - rstart)),
-              log(truncnorm::rtruncnorm(1, 0.4, 0.5, a = 0)),
-              log(truncnorm::rtruncnorm(1, 1, 0.4, a = 0)),
-              stats::runif(length(falseAlarms), min = -5, 5))
-    }
 
+      modelpara <- rstart[,c("rt","dpri","sd_target")]
+      x0 <- cbind(modelpara,criteria)
+
+    }
 
 
     cat('\rProgress: |',rep('=',floor((i/iterations)*50)),rep(' ',50 - floor((i/iterations)*50)),'|', sep = '')
 
-
+    # Optimize
     control <- list('maxit', 10000000, 'reltol', 0.0000000001)
-    temp    <- try(stats::optim(x0, solver, method = "BFGS", control = control), silent = TRUE)
+    temp    <- try(stats::optim(x0[i,], solver, method = "BFGS", control = control), silent = TRUE)
 
+    # Move to next iteration if it crashes out of one
     if (class(temp) == "try-error") {
       parameters[i]        <- NA
       value[i]             <- NA
@@ -110,9 +110,13 @@ fitDPSD <- function(falseAlarms, hit, iterations = 200, eqVar = TRUE){
     }
 
   }
-
+  # Safe-guard against wonky runs
+  parameters <- parameters[stats::complete.cases(parameters),]
+  value <- value[stats::complete.cases(value),]
+  #Identify run with min negLL
   Best <- parameters[which(value == min(value, na.rm = TRUE)),]
 
+  #Prepare output
   Bestcolumns <- c("recollection_target","recollection_lure","familiarity","sd_target")
   fanames<-NULL
   for (i in c(1:length(falseAlarms))){

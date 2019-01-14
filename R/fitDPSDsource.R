@@ -1,25 +1,24 @@
-#' Estimation of recollection and familiarity by fitting source memory ROC data to the Dual Process Signal Detection (DPSD) model
+#' Estimation of recollection and familiarity by fitting source memory data with the Dual Process Signal Detection (DPSD) model
 #'
 #' This function allows to estimate recollection and familiarity for source memory data by fitting data to the DPSD model.
-#' The optimization is attempted by minimizing the total squared difference between observed and
-#' predicted cumulative hit and false alarm rates using the Broyden-Fletcher-Goldfarb-Shanno (BFGS) algorithm in \code{\link{optim}}.
+#' The optimization is attempted by minimizing the summed log-likelihood using the Broyden-Fletcher-Goldfarb-Shanno (BFGS) algorithm
+#' in \code{\link{optim}}.
 #' The function uses random start values on each iteration in order to find the set of parameters,
 #' which fit the data best by returning the values with the lowest total squared difference.
 #' Optional arguments in the function allow the user to specify an equal-variance model and/or specify if recollection is
 #' to be estimated as a separate parameter for both target and lure items.
 #' Recollection is bounded to be between 0 and 1, Familiarity and the standard deviation of the target distribution to be positive.
-#' Criteria are unbounded.
+#' Criteria are  ordered.
 #' A high number of iterations is necessary to avoid local minima.
 #'
 #' @author Nicholas Lange, \email{lange.nk@gmail.com}
-#' @param falseAlarms A vector containing the false alarm rate.
-#' @param hit A vector containing the hit rate.
+#' @param falseAlarms A vector containing the number of false alarms per source category rating.
+#' @param hit A vector containing the number of hits per source category rating.
 #' @param iterations A numeric value specifying the number of iterations. Default is set to 200.
-#' @param eqRecollection A boolean value specifying if recollection is set equal for the target and lure source (TRUE) or is estimates separately for both sources (FALSE). Default is set to FALSE.
+#' @param eqRecollection A boolean value specifying if recollection is set equal for the target and lure source (TRUE) or is estimated separately for both sources (FALSE). Default is set to FALSE.
 #' @param eqVar A boolean value specifying if the standard deviation of the target distribution is equal to that of the lure distribution (i.e. = 1) (TRUE) or estimated separately (FALSE). Default is set to TRUE.
 #' @return The function returns a dataframe with components:
 #' \item{(parameters)}{The estimated parameters (recollection_target, recollection_lure, familiarity, sd_target, criteria) for the iteration with the lowest SumSquareError}
-#' \item{SSE}{Minimum sum square error}
 #' \item{negLL}{negative Log Likelihood}
 #' @references Yonelinas, A. P. (1999). The Contribution of Recollection and Familiarity to Recognition and Source-Memory Judgments: A Formal Dual-Process Model and an Analysis of Receiver Operating Characteristics. Journal of Experimental Psychology: Learning, Memory, and Cognition, 25(6), 1415 - 1434. http://doi.org/10.1037//0278-7393.25.6.1415
 #' @keywords ROC recollection familiarity DPSD
@@ -98,11 +97,14 @@ fitDPSDsource <- function(falseAlarms, hit, iterations = iterations, eqVar = eqV
       }
     }
 
+    # Long version to keep an eye on what the equations are
     I <- c(-Inf,crit,Inf)
 
     predFA <- vector()
-
+    # Lure items (1) recollected + not recollected
     predFA[1] <- falseAlarms[1] * log(rl + ((1 - rl) * (stats::pnorm(I[2] + dpri/2, sd = 1) - stats::pnorm(I[1] + dpri/2 , sd = 1))))
+
+    # Lure items (2-6), not recollected
     predFA[2] <- falseAlarms[2] * log((1 - rl) * (stats::pnorm(I[3] + dpri/2, sd = 1) - stats::pnorm(I[2] + dpri/2 , sd = 1)))
     predFA[3] <- falseAlarms[3] * log((1 - rl) * (stats::pnorm(I[4] + dpri/2, sd = 1) - stats::pnorm(I[3] + dpri/2 , sd = 1)))
     predFA[4] <- falseAlarms[4] * log((1 - rl) * (stats::pnorm(I[5] + dpri/2, sd = 1) - stats::pnorm(I[4] + dpri/2 , sd = 1)))
@@ -110,19 +112,19 @@ fitDPSDsource <- function(falseAlarms, hit, iterations = iterations, eqVar = eqV
     predFA[6] <- falseAlarms[6] * log((1 - rl) * (1 - stats::pnorm(I[6] + dpri/2 , sd = 1)) )
 
     predHit <- vector()
-    # Old items (1 -5) [not recollected]
+    # Target items (1 -5) [not recollected]
     predHit[1] <- hit[1] * log((1-rt) * (stats::pnorm(I[2] - dpri/2, sd = sd_target) - stats::pnorm(I[1] - dpri/2, sd = sd_target)))
     predHit[2] <- hit[2] * log((1-rt) * (stats::pnorm(I[3] - dpri/2, sd = sd_target) - stats::pnorm(I[2] - dpri/2, sd = sd_target)))
     predHit[3] <- hit[3] * log((1-rt) * (stats::pnorm(I[4] - dpri/2, sd = sd_target) - stats::pnorm(I[3] - dpri/2, sd = sd_target)))
     predHit[4] <- hit[4] * log((1-rt) * (stats::pnorm(I[5] - dpri/2, sd = sd_target) - stats::pnorm(I[4] - dpri/2, sd = sd_target)))
     predHit[5] <- hit[5] * log((1-rt) * (stats::pnorm(I[6] - dpri/2, sd = sd_target) - stats::pnorm(I[5] - dpri/2, sd = sd_target)))
-    # Old items (6) [Recollected or not recollected]
+    # Target items (6) [Recollected or not recollected]
     predHit[6] <- hit[6] * log(rt + ((1-rt) * (1 - stats::pnorm(I[6] - dpri/2, sd = sd_target))))
 
     return(-sum(c(predHit,predFA)))
 
   }
-
+  # estimate starting parameters from data
   rstart <- makeMLEstartparameters(falseAlarms,hit,iterations = iterations)
   x0 <- NULL
   for (i in 1:iterations) {
@@ -152,10 +154,11 @@ fitDPSDsource <- function(falseAlarms, hit, iterations = iterations, eqVar = eqV
 
     cat('\rProgress: |',rep('=',floor((i/iterations)*50)),rep(' ',50 - floor((i/iterations)*50)),'|', sep = '')
 
-
+    # Optimize
     control <- list('maxit', 10000000, 'reltol', 0.0000000001)
     temp    <- try(stats::optim(x0[i,], solver, method = "BFGS", control = control), silent = TRUE)
 
+    # Move to next iteration if it crashes out of one
     if (class(temp) == "try-error") {
       parameters       <- rbind(parameters,rep(NA,length(x0[i,])))
       value            <- rbind(value,NA)
@@ -166,10 +169,14 @@ fitDPSDsource <- function(falseAlarms, hit, iterations = iterations, eqVar = eqV
 
   }
 
-  parameters <- parameters[complete.cases(parameters),]
-  value <- value[complete.cases(value),]
+  # Safe-guard against wonky runs
+  parameters <- parameters[stats::complete.cases(parameters),]
+  value <- value[stats::complete.cases(value),]
+
+  # Identify run with lowest negLL
   Best <- parameters[which(value == min(value, na.rm = TRUE)),]
 
+  # Prepare output
   Bestcolumns <- c("recollection_target","recollection_lure","familiarity","sd_target")
   fanames<-NULL
   for (i in c(1:(length(falseAlarms)-1))){

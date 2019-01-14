@@ -1,4 +1,4 @@
-#' Estimation of recollection and familiarity by fitting source memory ROC data to the Dual Process Signal Detection (DPSD) model
+#' Estimation of recollection and familiarity by fitting source memory ROC data with the Dual Process Signal Detection (DPSD) model
 #'
 #' This function allows to estimate recollection and familiarity for source memory data by fitting data to the DPSD model.
 #' The optimization is attempted by minimizing the total squared difference between observed and
@@ -12,8 +12,8 @@
 #' A high number of iterations is necessary to avoid local minima.
 #'
 #' @author Nicholas Lange, \email{lange.nk@gmail.com}
-#' @param falseAlarms A vector containing the false alarm rate.
-#' @param hit A vector containing the hit rate.
+#' @param falseAlarms A vector containing the cumulative source false alarm rate.
+#' @param hit A vector containing the cumulative source hit rate.
 #' @param iterations A numeric value specifying the number of iterations. Default is set to 200.
 #' @param eqRecollection A boolean value specifying if recollection is set equal for the target and lure source (TRUE) or is estimates separately for both sources (FALSE). Default is set to FALSE.
 #' @param eqVar A boolean value specifying if the standard deviation of the target distribution is equal to that of the lure distribution (i.e. = 1) (TRUE) or estimated separately (FALSE). Default is set to TRUE.
@@ -83,6 +83,8 @@ fitDPSDROCsource <- function(falseAlarms, hit, iterations = 200, eqVar = TRUE, e
     return(total)
   }
 
+  # starting parameters
+
   for (i in 1:iterations) {
     x0 <- NULL
     if (eqVar == TRUE & eqRecollection == FALSE) {
@@ -121,10 +123,11 @@ fitDPSDROCsource <- function(falseAlarms, hit, iterations = 200, eqVar = TRUE, e
 
     cat('\rProgress: |',rep('=',floor((i/iterations)*50)),rep(' ',50 - floor((i/iterations)*50)),'|', sep = '')
 
-
+    # optimize
     control <- list('maxit', 10000000, 'reltol', 0.0000000001)
     temp    <- try(stats::optim(x0, solver, method = "BFGS", control = control), silent = TRUE)
 
+    # Move to next iteration if it crashes out of one
     if (class(temp) == "try-error") {
       parameters[i]        <- NA
       value[i]             <- NA
@@ -135,8 +138,10 @@ fitDPSDROCsource <- function(falseAlarms, hit, iterations = 200, eqVar = TRUE, e
 
   }
 
+  # Identify best-fitting
   Best <- parameters[which(value == min(value, na.rm = TRUE)),]
 
+  # Prepare output
   Bestcolumns <- c("recollection_target","recollection_lure","familiarity","sd_target")
   fanames<-NULL
   for (i in c(1:length(falseAlarms))){

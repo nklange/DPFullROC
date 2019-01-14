@@ -1,4 +1,4 @@
-#' Estimation of recollection and familiarity by fitting recognition memory ROC data to the Dual Process Signal Detection (DPSD) model
+#' Estimation of recollection and familiarity by fitting recognition memory ROC data with the Dual Process Signal Detection (DPSD) model
 #'
 #' This function allows to estimate recollection and familiarity for recognition memory data by fitting data to the DPSD model.
 #' The optimization is attempted by minimizing the total squared difference between observed and
@@ -12,16 +12,14 @@
 #' A high number of iterations is necessary to avoid local minima.
 #'
 #' @author Nicholas Lange, \email{lange.nk@gmail.com}
-#' @param falseAlarms A vector containing the false alarm rate.
-#' @param hit A vector containing the hit rate.
+#' @param falseAlarms A vector containing the cumulative recognition false alarm rate.
+#' @param hit A vector containing the cumulative recognition hit rate.
 #' @param iterations A numeric value specifying the number of iterations. Default is set to 200.
 #' @param eqVar A boolean value specifying if the standard deviation of the target distribution is equal to that of the lure distribution (i.e. = 1) (TRUE) or estimated separately (FALSE). Default is set to TRUE.
 #' @return The function returns a dataframe with components:
 #' \item{(parameters)}{The estimated parameters (recollection_target, recollection_lure = 0, familiarity, sd_target, criteria) for the iteration with the lowest SumSquareError}
 #' \item{SSE}{Minimum sum square error}
 #' @references Yonelinas, A. P. (1999). The Contribution of Recollection and Familiarity to Recognition and Source-Memory Judgments: A Formal Dual-Process Model and an Analysis of Receiver Operating Characteristics. Journal of Experimental Psychology: Learning, Memory, and Cognition, 25(6), 1415 - 1434. http://doi.org/10.1037//0278-7393.25.6.1415
-#' @seealso memoryROC, a R package for recognition DP ROCs by Joern Alexander Quent (\email{alexander.quent@rub.de})
-#' See \code{\link{github.com/JAQuent/memoryROC}}.
 #' @keywords ROC recollection familiarity DPSD
 #' @export
 
@@ -66,7 +64,7 @@ fitDPSDROC <- function(falseAlarms, hit, iterations = 200, eqVar = TRUE){
     total            <- sum(sqdiffhit) + sum(sqdifffalseAlarm)
     return(total)
   }
-
+  # starting parameters
   for (i in 1:iterations) {
     x0 <- NULL
     if (eqVar == TRUE) {
@@ -87,10 +85,11 @@ fitDPSDROC <- function(falseAlarms, hit, iterations = 200, eqVar = TRUE){
 
     cat('\rProgress: |',rep('=',floor((i/iterations)*50)),rep(' ',50 - floor((i/iterations)*50)),'|', sep = '')
 
-
+    # Optimize
     control <- list('maxit', 10000000, 'reltol', 0.0000000001)
     temp    <- try(stats::optim(x0, solver, method = "BFGS", control = control), silent = TRUE)
 
+    # Move to next iteration if it crashes out of one
     if (class(temp) == "try-error") {
       parameters[i]        <- NA
       value[i]             <- NA
@@ -101,8 +100,10 @@ fitDPSDROC <- function(falseAlarms, hit, iterations = 200, eqVar = TRUE){
 
   }
 
+  # Identify run with minSSE
   Best <- parameters[which(value == min(value, na.rm = TRUE)),]
 
+  # Prepare output
   Bestcolumns <- c("recollection_target","recollection_lure","familiarity","sd_target")
   fanames<-NULL
   for (i in c(1:length(falseAlarms))){

@@ -11,7 +11,7 @@
 #' \item{hit}{The extracted cumulative hit rate.}
 #' \item{zfa}{The z-transformed cumulative false alarm rate.}
 #' \item{zhit}{The z-transformed cumulative hit rate.}
-#' @keywords ROC hit false alarm
+#' @keywords ROC
 #' @export
 
 cumRates <- function(responseScale, confidenceRatings, TargetLure, targetLabel, lureLabel){

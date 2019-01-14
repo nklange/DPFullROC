@@ -44,6 +44,7 @@ predictedROC       <- function(recollection_target,recollection_lure, familiarit
   results$fa  <- c(seq(0.001, 0.99999, 0.01), 0.99999)
   criterion           <- stats::qnorm(results$fa/(1 - rl), - mul, sdl)
   criterion[which(results$fa/(1 - rl) > 1)] <- 1000
+  # Yonelinas (1999), p. 1420
   results$hit        <- results$fa + rt + (1 - rt) * stats::pnorm(criterion, - mut, sdt) - (1 - rl) * stats::pnorm(criterion, - mul, sdl)
   results$hit[results$hit > 1] <- 1
   return(data.frame(results))
