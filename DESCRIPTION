@@ -1,0 +1,16 @@
+Package: fullDPROC
+Type: Package
+Title: Fitting Dual-Process model to recognition and source memory data
+Version: 0.1.0
+Author: Nicholas Lange
+Maintainer: Nicholas Lange <lange.nk@gmail.com>
+Description: This package allows fitting of the dual-process model (Yonelinas, 1999) to recognition and source memory ROC.
+    Allows fitting to ROCs by SSE and to frequency in rating bins by maximum likelihood (Nelder-Mead approximation).
+    Users specify if they are fitting ROC or rating data, recognition or source memory data, an unequal variance model, and, in case of source memory data, separate recollection parameters for both sources of data.
+    Adapted from http://github.com/JAQuent/memoryROC.
+Imports:
+    truncnorm
+License: What license is it under?
+Encoding: UTF-8
+LazyData: true
+RoxygenNote: 6.0.1.9000

@@ -1,0 +1,6 @@
+*.Rproj
+*.Rhistory
+*.Rdata
+.Rproj.user
+*.docx
+*.tmp
