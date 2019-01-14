@@ -1,8 +1,9 @@
-# FullDPROC: Rpackage
+# fullDPROC: Rpackage
 
 * author: Nicholas Lange
 * contact: lange.nk@gmail.com
 * cran link: tba
+* Source: [fullDPROC_0.1.0.tar.gz](fullDPROC_0.1.0.tar.gz)
 
 This package fits the univariate dual-process model (Yonelinas, 1999) to recognition or source memory data by fitting the model to the ROC curve (minimizing SSE) or to the frequencies of responses by minimizing log-likelihood.
 
@@ -80,7 +81,9 @@ These are functions that are called from the wrapper function depending on argum
 
 ## To Do:
 
-* Tidy for cran 
+* Tidy for cran
+	* vignette
+	* example data or simulation function for some data
 * Also accept already summarized cumrates or frequency data rather than only item-level data
 * Integrate a Bayesian estimation
 * Make predictedROC talk directly to output from DPSD
