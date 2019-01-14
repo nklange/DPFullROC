@@ -2,7 +2,7 @@
 % Please edit documentation in R/fitDPSD.R
 \name{fitDPSD}
 \alias{fitDPSD}
-\title{Estimation of recollection and familiarity by fitting recognition memory data to the Dual Process Signal Detection (DPSD) model}
+\title{Estimation of recollection and familiarity by fitting recognition memory data with the Dual Process Signal Detection (DPSD) model}
 \usage{
 fitDPSD(falseAlarms, hit, iterations = 200, eqVar = TRUE)
 }
@@ -22,21 +22,17 @@ The function returns a dataframe with components:
 }
 \description{
 This function allows to estimate recollection and familiarity for recognition memory data by fitting data to the DPSD model.
-The optimization is attempted by minimizing the total squared difference between observed and
-predicted cumulative hit and false alarm rates using the Broyden-Fletcher-Goldfarb-Shanno (BFGS) algorithm in \code{\link{optim}}.
+The optimization is attempted by minimizing the summed log-likelihood using the Broyden-Fletcher-Goldfarb-Shanno (BFGS) algorithm
+in \code{\link{optim}}.
 The function uses random start values on each iteration in order to find the set of parameters,
 which fit the data best by returning the values with the lowest negative log likelihood.
 Recollection and Familiarity for the lure distribution (new items) are set to 0.
 Optional arguments in the function allow the user to specify an equal-variance model.
 Recollection is bounded to be between 0 and 1, Familiarity and the standard deviation of the target distribution to be positive.
-Criteria are unbounded.
+Criteria are ordered.
 }
 \references{
 Yonelinas, A. P. (1999). The Contribution of Recollection and Familiarity to Recognition and Source-Memory Judgments: A Formal Dual-Process Model and an Analysis of Receiver Operating Characteristics. Journal of Experimental Psychology: Learning, Memory, and Cognition, 25(6), 1415 - 1434. http://doi.org/10.1037//0278-7393.25.6.1415
-}
-\seealso{
-memoryROC, a R package for recognition DP ROCs by Joern Alexander Quent (\email{alexander.quent@rub.de})
-See \code{\link{github.com/JAQuent/memoryROC}}.
 }
 \author{
 Nicholas Lange, \email{lange.nk@gmail.com}

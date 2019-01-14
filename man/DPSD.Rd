@@ -2,7 +2,7 @@
 % Please edit documentation in R/DPSD.R
 \name{DPSD}
 \alias{DPSD}
-\title{Wrapper for calculation of cumulative hit and false alarm rates and subsequent model fitting}
+\title{Wrapper for fitting the dual-process model to recognition and source memory rating data}
 \usage{
 DPSD(responseScale, confidenceRatings, TargetLure, targetLabel, lureLabel,
   iterations = 200, eqVar = TRUE, eqRecollection = FALSE,
@@ -15,9 +15,9 @@ DPSD(responseScale, confidenceRatings, TargetLure, targetLabel, lureLabel,
 
 \item{TargetLure}{An vector coding containing information whether each individual item is a Target or Lure item (e.g. Old, New, Old, Old)}
 
-\item{targetLabel}{A string/integer designating the label for the target source in TargetLure}
+\item{targetLabel}{A string/integer designating the label for the target items in TargetLure}
 
-\item{lureLabel}{A string/integer designating the label for the lure source in TargetLure}
+\item{lureLabel}{A string/integer designating the label for the lure items in TargetLure}
 
 \item{iterations}{A numeric value specifying the number of iterations. Default is set to 200.}
 
@@ -27,25 +27,35 @@ DPSD(responseScale, confidenceRatings, TargetLure, targetLabel, lureLabel,
 
 \item{fitSource}{A boolean value specifying if the model is being fitted to source memory data (TRUE) or recognition memory data (FALSE). Default is set to TRUE}
 
-\item{fitROC}{A boolean specifying if the model being fitted is fitted SSE to ROCs or MLE to raw category ratings}
+\item{fitROC}{A boolean specifying if the model is fitted by minimizing SSE to ROCs or by MLE to rating frequencies}
 }
 \value{
 The function returns a dataframe with components:
-\item{(parameters)}{The estimated parameters (recollection_target, recollection_lure, familiarity, sd_target, criteria) for the iteration with the lowest SumSquareError}
-\item{SSE}{Minimum sum square error}
+\item{(parameters)}{The estimated parameters (recollection_target, recollection_lure, familiarity, sd_target, criteria) for the iteration with the lowest SSE or likelihood}
+\item{SSE if fitROC = TRUE}{Minimum sum square error}
+\item{negLL if fitROC = FALSE}{negative Log Likelihood}
 }
 \description{
-This function allows to estimate recollection and familiarity for recognition and source memory data by fitting
-data to the DPSD model.
-The optimization is attempted by minimizing the total squared difference between observed and
-predicted cumulative hit and false alarm rates using the Broyden-Fletcher-Goldfarb-Shanno (BFGS) algorithm
-in \code{\link{optim}}. The function uses random start values on each iteration in order to find the set of parameters,
-which fit the data best by returning the values with the lowest total squared difference.
-Optional arguments in the function allow the user to specify if they are fitting recognition or source memory data,
-an equal-variance model and if recollection is to be estimated as a separate parameter for both target and lure items,
-when fitting source memory data.
+This function fits the univariate DPSD model (Yonelinas, 1999) to recognition or source memory item-level rating data.
+}
+\details{
+The optimization can be attempted by by minimizing the total squared difference (SSE) between observed and
+predicted cumulative hit and false alarm rates by setting "fitROC = TRUE" (default is fitROC = FALSE) or by minimzing the
+negative log-likelihood for rating frequencies by setting "fitROC = FALSE". In both cases, fitting is done using the
+Broyden-Fletcher-Goldfarb-Shanno (BFGS) algorithm in \code{\link{optim}}.
+
+When setting fitROC = TRUE, the data is transformed into cumulative hit/fa rates (via cumRates.R) prior to fitting. When
+setting fitROC = FALSE, the data is transformed into frequency data (via ratingFreq.R) prior to fitting.
+
+Arguments in the function allow the user to specify if they are fitting recognition or source memory data,
+an equal- or unequal-variance model and when fitting source memory data, if a single recollection parameter equal for both
+sources or two separate recollection parameters are to be estimated.
+
 Recollection is bounded to be between 0 and 1, Familiarity and the standard deviation of the target distribution to be positive.
-Criteria are unbounded.
+Criteria are unbounded, for MLE, criteria are ordered.
+
+Each model is fit to each data set for a set number of times (default is iterations = 200), and the iteration with the minimum minimized value
+is output.
 }
 \references{
 Yonelinas, A. P. (1999). The Contribution of Recollection and Familiarity to Recognition and Source-Memory Judgments: A Formal Dual-Process Model and an Analysis of Receiver Operating Characteristics. Journal of Experimental Psychology: Learning, Memory, and Cognition, 25(6), 1415 - 1434. http://doi.org/10.1037//0278-7393.25.6.1415

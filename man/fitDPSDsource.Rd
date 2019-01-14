@@ -2,37 +2,37 @@
 % Please edit documentation in R/fitDPSDsource.R
 \name{fitDPSDsource}
 \alias{fitDPSDsource}
-\title{Estimation of recollection and familiarity by fitting source memory ROC data to the Dual Process Signal Detection (DPSD) model}
+\title{Estimation of recollection and familiarity by fitting source memory data with the Dual Process Signal Detection (DPSD) model}
 \usage{
 fitDPSDsource(falseAlarms, hit, iterations = iterations, eqVar = eqVar,
   eqRecollection = eqRecollection)
 }
 \arguments{
-\item{falseAlarms}{A vector containing the false alarm rate.}
+\item{falseAlarms}{A vector containing the number of false alarms per source category rating.}
 
-\item{hit}{A vector containing the hit rate.}
+\item{hit}{A vector containing the number of hits per source category rating.}
 
 \item{iterations}{A numeric value specifying the number of iterations. Default is set to 200.}
 
 \item{eqVar}{A boolean value specifying if the standard deviation of the target distribution is equal to that of the lure distribution (i.e. = 1) (TRUE) or estimated separately (FALSE). Default is set to TRUE.}
 
-\item{eqRecollection}{A boolean value specifying if recollection is set equal for the target and lure source (TRUE) or is estimates separately for both sources (FALSE). Default is set to FALSE.}
+\item{eqRecollection}{A boolean value specifying if recollection is set equal for the target and lure source (TRUE) or is estimated separately for both sources (FALSE). Default is set to FALSE.}
 }
 \value{
 The function returns a dataframe with components:
 \item{(parameters)}{The estimated parameters (recollection_target, recollection_lure, familiarity, sd_target, criteria) for the iteration with the lowest SumSquareError}
-\item{SSE}{Minimum sum square error}
+\item{negLL}{negative Log Likelihood}
 }
 \description{
 This function allows to estimate recollection and familiarity for source memory data by fitting data to the DPSD model.
-The optimization is attempted by minimizing the total squared difference between observed and
-predicted cumulative hit and false alarm rates using the Broyden-Fletcher-Goldfarb-Shanno (BFGS) algorithm in \code{\link{optim}}.
+The optimization is attempted by minimizing the summed log-likelihood using the Broyden-Fletcher-Goldfarb-Shanno (BFGS) algorithm
+in \code{\link{optim}}.
 The function uses random start values on each iteration in order to find the set of parameters,
 which fit the data best by returning the values with the lowest total squared difference.
 Optional arguments in the function allow the user to specify an equal-variance model and/or specify if recollection is
 to be estimated as a separate parameter for both target and lure items.
 Recollection is bounded to be between 0 and 1, Familiarity and the standard deviation of the target distribution to be positive.
-Criteria are unbounded.
+Criteria are  ordered.
 A high number of iterations is necessary to avoid local minima.
 }
 \references{

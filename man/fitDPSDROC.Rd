@@ -2,14 +2,14 @@
 % Please edit documentation in R/fitDPSDROC.R
 \name{fitDPSDROC}
 \alias{fitDPSDROC}
-\title{Estimation of recollection and familiarity by fitting recognition memory ROC data to the Dual Process Signal Detection (DPSD) model}
+\title{Estimation of recollection and familiarity by fitting recognition memory ROC data with the Dual Process Signal Detection (DPSD) model}
 \usage{
 fitDPSDROC(falseAlarms, hit, iterations = 200, eqVar = TRUE)
 }
 \arguments{
-\item{falseAlarms}{A vector containing the false alarm rate.}
+\item{falseAlarms}{A vector containing the cumulative recognition false alarm rate.}
 
-\item{hit}{A vector containing the hit rate.}
+\item{hit}{A vector containing the cumulative recognition hit rate.}
 
 \item{iterations}{A numeric value specifying the number of iterations. Default is set to 200.}
 
@@ -34,10 +34,6 @@ A high number of iterations is necessary to avoid local minima.
 }
 \references{
 Yonelinas, A. P. (1999). The Contribution of Recollection and Familiarity to Recognition and Source-Memory Judgments: A Formal Dual-Process Model and an Analysis of Receiver Operating Characteristics. Journal of Experimental Psychology: Learning, Memory, and Cognition, 25(6), 1415 - 1434. http://doi.org/10.1037//0278-7393.25.6.1415
-}
-\seealso{
-memoryROC, a R package for recognition DP ROCs by Joern Alexander Quent (\email{alexander.quent@rub.de})
-See \code{\link{github.com/JAQuent/memoryROC}}.
 }
 \author{
 Nicholas Lange, \email{lange.nk@gmail.com}

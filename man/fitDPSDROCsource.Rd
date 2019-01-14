@@ -2,15 +2,15 @@
 % Please edit documentation in R/fitDPSDROCsource.R
 \name{fitDPSDROCsource}
 \alias{fitDPSDROCsource}
-\title{Estimation of recollection and familiarity by fitting source memory ROC data to the Dual Process Signal Detection (DPSD) model}
+\title{Estimation of recollection and familiarity by fitting source memory ROC data with the Dual Process Signal Detection (DPSD) model}
 \usage{
 fitDPSDROCsource(falseAlarms, hit, iterations = 200, eqVar = TRUE,
   eqRecollection = FALSE)
 }
 \arguments{
-\item{falseAlarms}{A vector containing the false alarm rate.}
+\item{falseAlarms}{A vector containing the cumulative source false alarm rate.}
 
-\item{hit}{A vector containing the hit rate.}
+\item{hit}{A vector containing the cumulative source hit rate.}
 
 \item{iterations}{A numeric value specifying the number of iterations. Default is set to 200.}
 

@@ -2,7 +2,7 @@
 % Please edit documentation in R/makeMLEstartparameters.R
 \name{makeMLEstartparameters}
 \alias{makeMLEstartparameters}
-\title{DP Recog-Source: Make start parameters}
+\title{Dual process MLE: Make start parameters}
 \usage{
 makeMLEstartparameters(freqFA, freqHit, iterations)
 }
@@ -18,7 +18,7 @@ The function returns a dataframe:
 \item{(parameters)}{Starting parameters for all parameters that versions of the DP Recog-Source model could vary to date}
 }
 \description{
-This function estimates start parameters for the DP biavariate model/ROC fit, with starting parameters for the
+This function estimates start parameters for the DP univariate model fit, with starting parameters for the
 first 40% of iterations sampled from around the observed data, and 60% sampled from a uniform distribution.
 }
 \author{
