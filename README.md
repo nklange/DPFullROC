@@ -81,9 +81,9 @@ These are functions that are called from the wrapper function depending on argum
 
 ## To Do:
 
+* Integrate Bayesian estimation from [Hierarchical Bayes version](https://github.com/nklange/HierBayes/tree/master/Univariate)
 * Tidy for cran
 	* vignette
 	* example data or simulation function for some data
 * Also accept already summarized cumrates or frequency data rather than only item-level data
-* Integrate a Bayesian estimation
 * Make predictedROC talk directly to output from DPSD
